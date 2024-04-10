@@ -358,18 +358,23 @@ macro_rules! check_status_and_type {
         let value_type = $crate::type_of!($env, $val)?;
         let error_msg = match value_type {
           ValueType::Function => {
-            let function_name = unsafe { JsFunction::from_raw_unchecked($env, $val).name()? };
-            format!(
-              $msg,
-              format!(
-                "function {}(..) ",
-                if function_name.len() == 0 {
-                  "anonymous".to_owned()
-                } else {
-                  function_name
-                }
-              )
-            )
+            let js_fn = unsafe { JsFunction::from_raw_unchecked($env, $val) };
+
+            js_fn.body().map(|body| format!($msg, body)).or_else(|_| {
+              js_fn.name().map(|function_name| {
+                format!(
+                  $msg,
+                  format!(
+                    "function {}(..)",
+                    if function_name.len() == 0 {
+                      "anonymous".to_owned()
+                    } else {
+                      function_name
+                    }
+                  )
+                )
+              })
+            })?
           }
           ValueType::Object => {
             let env_ = $crate::Env::from($env);

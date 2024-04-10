@@ -137,6 +137,18 @@ impl JsFunction {
     Ok(name_value.into_utf8()?.as_str()?.to_owned())
   }
 
+  /// function body
+  pub fn body(&self) -> Result<String> {
+    let object = unsafe { JsObject::from_raw_unchecked(self.0.env, self.0.value) };
+
+    let f = object
+      .get::<_, JsFunction>("toString")?
+      .ok_or_else(|| Error::from_reason("should have to string"))?;
+
+    let body = f.call_without_args(Some(&object))?.coerce_to_string()?;
+    Ok(body.into_utf8()?.as_str()?.to_owned())
+  }
+
   #[cfg(feature = "napi4")]
   pub fn create_threadsafe_function<T, V, F, ES>(
     &self,

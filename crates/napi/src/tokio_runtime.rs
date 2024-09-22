@@ -8,7 +8,12 @@ use crate::{sys, JsDeferred, JsUnknown, NapiValue, Result};
 fn create_runtime() -> Option<Runtime> {
   #[cfg(not(target_family = "wasm"))]
   {
-    let runtime = tokio::runtime::Runtime::new().expect("Create tokio runtime failed");
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+    .worker_threads(100)
+    .enable_all()
+    .build()
+    .unwrap();
+    // let runtime = tokio::runtime::Runtime::new().expect("Create tokio runtime failed");
     Some(runtime)
   }
 

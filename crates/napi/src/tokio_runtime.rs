@@ -1,14 +1,16 @@
 use std::{future::Future, marker::PhantomData, sync::RwLock};
 
 use once_cell::sync::Lazy;
-use tokio::runtime::Runtime;
+use tokio::runtime::{Builder, Runtime};
 
 use crate::{sys, JsDeferred, JsUnknown, NapiValue, Result};
 
 fn create_runtime() -> Option<Runtime> {
   #[cfg(not(target_family = "wasm"))]
   {
-    let runtime = tokio::runtime::Runtime::new().expect("Create tokio runtime failed");
+    use std::num::NonZeroUsize;
+    let cpus = std::thread::available_parallelism().map_or(1, NonZeroUsize::get);
+    let runtime =Builder::new_multi_thread().worker_threads(cpus+1).enable_all().build().expect("Create tokio runtime failed");
     Some(runtime)
   }
 

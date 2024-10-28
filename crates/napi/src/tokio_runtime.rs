@@ -10,7 +10,7 @@ fn create_runtime() -> Option<Runtime> {
   {
     use std::num::NonZeroUsize;
     let cpus = std::thread::available_parallelism().map_or(1, NonZeroUsize::get);
-    let runtime =Builder::new_multi_thread().worker_threads(cpus+4).enable_all().build().expect("Create tokio runtime failed");
+    let runtime =Builder::new_multi_thread().worker_threads(cpus).enable_all().build().expect("Create tokio runtime failed");
     Some(runtime)
   }
 
